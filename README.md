@@ -80,7 +80,10 @@
     <div class="container">
         <!-- Mudra Cards -->
         <div class="mudra-card">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Pataka-mudra.jpg" alt="Pataka Mudra">
+            #output 
+            ![image](https://github.com/user-attachments/assets/f8337cd2-0293-4958-a11c-38b6f3eb96ce)
+
+            alt="Pataka Mudra">
             <h3>Pataka</h3>
             <p>Represents a flag. Used for denoting the sky, stopping, or silence.</p>
         </div>
