@@ -3,99 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cube Scramble & Timer</title>
+    <title>Cube Timer & Scramble Generator</title>
     <style>
+        /* General Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #ff6f61, #4bc0c8);
+            color: #fff;
+            text-align: center;
+            overflow-x: hidden;
         }
 
         h1 {
-            color: #333;
+            font-size: 2.5em;
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #1e1e2f;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .scramble-box, .stopwatch-box {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a40;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .scramble {
-            font-size: 1.5rem;
-            margin: 20px;
-            color: #007BFF;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            color: #ffdd57;
         }
 
-        .controls {
-            margin: 20px;
+        .stopwatch {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4bc0c8;
+            margin-bottom: 10px;
         }
 
-        .controls button {
-            padding: 10px 20px;
-            font-size: 1rem;
+        button {
             margin: 5px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
+            font-size: 1em;
             cursor: pointer;
+            transition: transform 0.2s;
         }
 
-        .controls button:hover {
-            background-color: #007BFF;
-            color: #fff;
+        button:hover {
+            transform: scale(1.1);
         }
 
-        .timer {
-            font-size: 2rem;
-            margin: 20px;
+        .scramble-btn {
+            background-color: #ff6f61;
+            color: white;
+        }
+
+        .scramble-btn:hover {
+            background-color: #d65348;
+        }
+
+        .start-btn {
+            background-color: #4bc0c8;
+            color: white;
+        }
+
+        .start-btn:hover {
+            background-color: #369ba9;
+        }
+
+        .stop-btn {
+            background-color: #ffdd57;
             color: #333;
+        }
+
+        .stop-btn:hover {
+            background-color: #e2be45;
+        }
+
+        .reset-btn {
+            background-color: #9c27b0;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background-color: #7b1fa2;
+        }
+
+        .cube-logo {
+            width: 80px;
+            margin: 20px auto;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <h1>Cube Scramble & Timer</h1>
-    <div class="scramble" id="scramble">Press "Generate Scramble" to begin!</div>
-    <div class="controls">
-        <button onclick="generateScramble()">Generate Scramble</button>
-        <button onclick="startTimer()">Start Timer</button>
-        <button onclick="stopTimer()">Stop Timer</button>
-        <button onclick="resetTimer()">Reset Timer</button>
+    <div class="container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0a/Rubik%27s_cube.svg" alt="Cube Logo" class="cube-logo">
+        <h1>Cube Timer & Scramble Generator</h1>
+        <div class="scramble-box">
+            <h2>Scramble</h2>
+            <div class="scramble" id="scramble">Press "Generate Scramble"</div>
+            <button class="scramble-btn" onclick="generateScramble()">Generate Scramble</button>
+        </div>
+        <div class="stopwatch-box">
+            <h2>Stopwatch</h2>
+            <div class="stopwatch" id="stopwatch">00:00.00</div>
+            <button class="start-btn" onclick="startStopwatch()">Start</button>
+            <button class="stop-btn" onclick="stopStopwatch()">Stop</button>
+            <button class="reset-btn" onclick="resetStopwatch()">Reset</button>
+        </div>
     </div>
-    <div class="timer" id="timer">0.000</div>
 
     <script>
-        // Scramble Generator
+        // Cube Scramble Generator
+        const moves = ["R", "L", "U", "D", "F", "B"];
+        const modifiers = ["", "'", "2"];
+
         function generateScramble() {
-            const moves = ['R', "R'", 'R2', 'L', "L'", 'L2', 'U', "U'", 'U2', 'D', "D'", 'D2', 'F', "F'", 'F2', 'B', "B'", 'B2'];
-            let scramble = '';
+            let scramble = [];
             for (let i = 0; i < 20; i++) {
-                scramble += moves[Math.floor(Math.random() * moves.length)] + ' ';
+                const move = moves[Math.floor(Math.random() * moves.length)];
+                const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+                scramble.push(move + modifier);
             }
-            document.getElementById('scramble').innerText = scramble;
+            document.getElementById("scramble").innerText = scramble.join(" ");
         }
 
-        // Stopwatch
-        let timerInterval;
-        let startTime;
-        function startTimer() {
-            if (!timerInterval) {
-                startTime = performance.now();
-                timerInterval = setInterval(() => {
-                    const currentTime = (performance.now() - startTime) / 1000;
-                    document.getElementById('timer').innerText = currentTime.toFixed(3);
-                }, 10);
-            }
+        // Stopwatch Functionality
+        let stopwatchInterval;
+        let elapsedTime = 0;
+
+        function formatTime(ms) {
+            const date = new Date(ms);
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const milliseconds = String(date.getMilliseconds()).padStart(3, '0').slice(0, 2);
+            return `${minutes}:${seconds}.${milliseconds}`;
         }
 
-        function stopTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
+        function startStopwatch() {
+            const startTime = Date.now() - elapsedTime;
+            stopwatchInterval = setInterval(() => {
+                elapsedTime = Date.now() - startTime;
+                document.getElementById("stopwatch").innerText = formatTime(elapsedTime);
+            }, 10);
         }
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            document.getElementById('timer').innerText = '0.000';
+        function stopStopwatch() {
+            clearInterval(stopwatchInterval);
+        }
+
+        function resetStopwatch() {
+            clearInterval(stopwatchInterval);
+            elapsedTime = 0;
+            document.getElementById("stopwatch").innerText = "00:00.00";
         }
     </script>
 </body>
